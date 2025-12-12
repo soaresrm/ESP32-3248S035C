@@ -17,11 +17,11 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    key: "1Mq6OokXVunbxPZJV/aToD8NvKRg6ySPR5CzVeVlGp0="
 
 ota:
   - platform: esphome
-    password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    password: "ff2ad04896ca0795a48b7167ee0c7812"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -30,7 +30,7 @@ wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Desk-Screen Fallback Hotspot"
-    password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    password: "R4bVAO5ViyhA"
 
 captive_portal:
 
@@ -216,7 +216,7 @@ lvgl:
               type: GRID
 
               # top row: 5 equal columns
-              grid_rows: [FR(1), FR(1)]
+              grid_rows: [FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1)]
               grid_columns: [FR(1), FR(1), FR(1), FR(1), FR(1)]
               pad_row: 6
               pad_column: 6
