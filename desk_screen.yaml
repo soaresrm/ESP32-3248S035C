@@ -1,0 +1,347 @@
+substitutions:
+  name: desk-screen
+  friendly_name: Desk Screen
+
+esphome:
+  name: desk-screen
+  friendly_name: Desk Screen
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+ota:
+  - platform: esphome
+    password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Desk-Screen Fallback Hotspot"
+    password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+captive_portal:
+
+# SPI Display
+spi:
+  - id: lcd
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin: GPIO12
+
+# I2C (Touch optional scan)
+i2c:
+  sda: 33
+  scl: 32  
+  scan: true
+  id: bus_a
+
+# Fonts
+font:
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 500
+    id: roboto_medium
+    size: 22
+    bpp: 4
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: icon_40
+    size: 30
+    bpp: 1
+    glyphs: [
+      "\U000F07C0", # computer
+      "\U000F0454", # tv remote
+      "\U000F08F3", # nas
+      "\U000F1BB8", # HDMI
+      "\U000F0E33", # gamepad
+    ]
+  - file: 'fonts/AlmaMono-Regular.otf'
+    id: almamono40
+    size: 40
+    bpp: 4
+  - file: 'fonts/AlmaMono-Regular.otf'
+    id: almamono18
+    size: 18
+    bpp: 4
+
+
+# Define pins for `light display and back LED1
+output:
+  - platform: ledc
+    pin: 27
+    id: backlight_pin
+  - platform: ledc
+    id: output_red
+    pin: GPIO4
+    inverted: true
+  - platform: ledc
+    id: output_green
+    pin: GPIO16
+    inverted: true
+  - platform: ledc
+    id: output_blue
+    pin: GPIO17
+    inverted: true
+
+light:
+  - platform: monochromatic
+    output: backlight_pin
+    name: "Display Backlight"
+    id: back_light
+    restore_mode: ALWAYS_ON
+    on_turn_on:
+      - light.turn_off: led
+      - delay: 60min
+      - light.turn_off: 
+          id: back_light
+          transition_length: 1s
+    on_turn_off:
+      - light.turn_on:
+          id: led
+          effect: "Slow Pulse"
+  - platform: rgb
+    name: LED
+    red: output_red
+    id: led
+    green: output_green
+    blue: output_blue
+    restore_mode: ALWAYS_OFF
+    effects:
+      - pulse:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+          min_brightness: 0%
+          max_brightness: 100%
+      - pulse:
+          name: "Slow Pulse"
+          transition_length: 2s      # defaults to 1s
+          update_interval: 3s
+      - pulse:
+          name: "Asymmetrical Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 500ms
+          update_interval: 1.5s
+
+# Touchscreen (GT911) - Calibrated for 480x320 landscape
+touchscreen:
+  platform: gt911
+  id: my_touch
+  update_interval: 50ms
+  transform:
+    mirror_y: true 
+    mirror_x: true 
+
+  on_touch:
+    - light.turn_on: back_light
+    - lambda: |-
+          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
+              touch.x,
+              touch.y,
+              touch.x_raw,
+              touch.y_raw
+              );
+
+# Display (ST7796) - Landscape 480x320
+display:
+  - platform: ili9xxx
+    model: ST7796
+    spi_id: lcd
+    cs_pin: 15
+    dc_pin: 2
+    invert_colors: false
+    rotation: 180
+    dimensions: 320x480
+    update_interval: never
+    auto_clear_enabled: false    
+    id: my_display
+
+#Text from HA
+text_sensor:
+  - platform: homeassistant
+    id: ha_time
+    entity_id: sensor.time
+
+  - platform: homeassistant
+    id: ha_date
+    entity_id: sensor.date
+
+#Time/Date Sync
+interval:
+  - interval: 1s
+    then:
+      - lvgl.label.update:
+          id: lbl_status
+          text: !lambda |-
+            std::string time = id(ha_time).state.empty()
+                ? "--:--"
+                : id(ha_time).state.c_str();
+
+            std::string date = id(ha_date).state.empty()
+                ? "--------"
+                : id(ha_date).state.c_str();
+
+            std::string combined = time + "   " + date;
+            return combined.c_str();
+
+
+#Screen and buttons
+lvgl:
+  pages:
+    - id: button_page
+      bg_color: 0x000000
+      widgets:
+        - obj:
+            align: center
+            width: 100%
+            height: 100%
+            bg_color: 0x000000
+            pad_all: 0
+            layout:
+              type: GRID
+
+              # top row: 5 equal columns
+              grid_rows: [FR(1), FR(1)]
+              grid_columns: [FR(1), FR(1), FR(1), FR(1), FR(1)]
+              pad_row: 6
+              pad_column: 6
+
+            widgets:
+              # ==================================================================
+              # TIME - ROW 0
+              # ==================================================================
+              - label:
+                  id: lbl_status
+                  text_font: roboto_medium
+                  text_color: 0xFFFFFF
+                  text: "--:--   --------"   # placeholder
+                  text_align: CENTER
+                  grid_cell_row_pos: 0
+                  grid_cell_column_pos: 0
+                  grid_cell_column_span: 5
+                  grid_cell_x_align: CENTER
+                  grid_cell_y_align: START
+
+
+
+              # ==================================================================
+              # BUTTON - ROW 1
+              # ==================================================================
+              # ==================================================================
+              # BUTTON 1
+              # ==================================================================
+              - button:
+                  id: btn_1
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 0
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.new_script
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F07C0"   # computer icon
+
+              # ==================================================================
+              - button:
+                  id: btn_2
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 1
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.new_script_duplicate
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F0454"   # remote
+
+              # ==================================================================
+              - button:
+                  id: btn_3
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 2
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.hdmi_3
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F08F3"   # NAS
+
+              # ==================================================================
+              - button:
+                  id: btn_4
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 3
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.hdmi_4
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F1BB8"   # HDMI
+
+              # ==================================================================
+              - button:
+                  id: btn_5
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 4
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.hdmi_4
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F0E33"   # gamepad
+  
+
+#Time/Date Updates
+  on_ready:
+    - lvgl.label.update:
+        id: lbl_status
+        text: !lambda |-
+          return (
+            (id(ha_time).state.empty() ? String("??:??") : id(ha_time).state.c_str())
+            + String("   ")
+            + (id(ha_date).state.empty() ? String("--------") : id(ha_date).state.c_str())
+          ).c_str();
