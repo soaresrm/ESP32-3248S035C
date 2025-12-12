@@ -144,8 +144,8 @@ touchscreen:
   id: my_touch
   update_interval: 50ms
   transform:
-    mirror_y: true 
-    mirror_x: true 
+    mirror_y: false 
+    mirror_x: false 
 
   on_touch:
     - light.turn_on: back_light
@@ -165,7 +165,7 @@ display:
     cs_pin: 15
     dc_pin: 2
     invert_colors: false
-    rotation: 180
+    rotation: 0
     dimensions: 320x480
     update_interval: never
     auto_clear_enabled: false    
