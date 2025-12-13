@@ -181,6 +181,33 @@ text_sensor:
     id: ha_date
     entity_id: sensor.date
 
+  - platform: homeassistant
+    id: NUC
+    entity_id: binary_sensor.192_168_88_167
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_6
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_6
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F07C0");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F07C0");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(0xFFFF00)   // yellow ON
+                : lv_color_hex(0xFFFFFF);  // white OFF
+
 #Time/Date Sync
 interval:
   - interval: 1s
@@ -240,7 +267,7 @@ lvgl:
 
 
               # ==================================================================
-              # BUTTON - ROW 1
+              # BUTTONS - ROW 1
               # ==================================================================
               # ==================================================================
               # BUTTON 1
@@ -333,7 +360,79 @@ lvgl:
                         text_font: icon_40
                         text_color: 0xFFFFFF
                         text: "\U000F0E33"   # gamepad
-  
+
+              # ==================================================================
+              # BUTTONS - ROW 2
+              # ================================================================== 
+              - button:
+                  id: btn_6
+                  grid_cell_row_pos: 2
+                  grid_cell_column_pos: 1
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.1705863537425
+                  widgets:
+                    - label:
+                        id: lbl_btn_6
+                        text_font: icon_40
+                        text: "\U000F07C0"
+                        text_color: 0xFFFFFF   
+ 
+
+              - button:
+                  id: btn_7
+                  grid_cell_row_pos: 2
+                  grid_cell_column_pos: 2
+                  bg_color: 0x00000000
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.script_2
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F0012"   # replace with desired icon
+
+              - button:
+                  id: btn_8
+                  grid_cell_row_pos: 2
+                  grid_cell_column_pos: 3
+                  bg_color: 0x00000000
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.script_3
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F0013"   # replace with desired icon
+
+              - button:
+                  id: btn_9
+                  grid_cell_row_pos: 2
+                  grid_cell_column_pos: 4
+                  bg_color: 0x00000000
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: script.toggle
+                        data:
+                          entity_id: script.script_4
+                  widgets:
+                    - label:
+                        text_font: icon_40
+                        text_color: 0xFFFFFF
+                        text: "\U000F0014"   # replace with desired icon
 
 #Time/Date Updates
   on_ready:
