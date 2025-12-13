@@ -68,7 +68,10 @@ font:
       "\U000F1BB8", # HDMI
       "\U000F1919", # gamepad
       "\U000F048C", # Server
+      "\U000F0379", # Monitor
+      "\U000F1987", # Monitor Light               
     ]
+
   - file: 'fonts/AlmaMono-Regular.otf'
     id: almamono40
     size: 40
@@ -201,6 +204,142 @@ text_sensor:
                 snprintf(buf, sizeof(buf), "%s", "\U000F07C0");
               } else {
                 snprintf(buf, sizeof(buf), "%s", "\U000F07C0");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(0xFFFF00)   // yellow ON
+                : lv_color_hex(0xFFFFFF);  // white OFF
+
+  - platform: homeassistant
+    id: Hogwarts
+    entity_id: binary_sensor.truenas_w
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_7
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_7
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F048C");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F048C");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(0xFFFF00)   // yellow ON
+                : lv_color_hex(0xFFFFFF);  // white OFF
+
+  - platform: homeassistant
+    id: Gringotts
+    entity_id: binary_sensor.truenas_p
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_8
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_8
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F048C");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F048C");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(0xFFFF00)   // yellow ON
+                : lv_color_hex(0xFFFFFF);  // white OFF
+
+  - platform: homeassistant
+    id: Monitor_Left
+    entity_id: switch.monitor_right_switch
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_9
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_9
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F0379");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F0379");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(0xFFFF00)   // yellow ON
+                : lv_color_hex(0xFFFFFF);  // white OFF
+
+
+  - platform: homeassistant
+    id: Monitor_Light
+    entity_id: switch.monitor_light_switch
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_10
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_10
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F1987");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F1987");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(0xFFFF00)   // yellow ON
+                : lv_color_hex(0xFFFFFF);  // white OFF
+
+  - platform: homeassistant
+    id: Monitor_Right
+    entity_id: switch.monitor_left_switch
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_11
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_11
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F0379");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F0379");
               }
               return buf;
 
@@ -397,7 +536,7 @@ lvgl:
               - button:
                   id: btn_6
                   grid_cell_row_pos: 4
-                  grid_cell_column_pos: 0
+                  grid_cell_column_pos: 1
                   bg_color: 0x00000000       # fully transparent
                   border_width: 0
                   on_click:
@@ -411,58 +550,117 @@ lvgl:
                         text_font: icon_40
                         text: "\U000F07C0" # Computer
                         text_color: 0xFFFFFF   
- 
 
               - button:
                   id: btn_7
                   grid_cell_row_pos: 4
-                  grid_cell_column_pos: 1
-                  bg_color: 0x00000000
+                  grid_cell_column_pos: 2
+                  bg_color: 0x00000000       # fully transparent
                   border_width: 0
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
                         data:
-                          entity_id: script.script_2
+                          entity_id: script.wol_truenas
                   widgets:
                     - label:
+                        id: lbl_btn_7
                         text_font: icon_40
-                        text_color: 0xFFFFFF
-                        text: "\U000F08F3"   # NAS
+                        text: "\U000F048C"   # Server
+                        text_color: 0xFFFFFF  
 
               - button:
                   id: btn_8
                   grid_cell_row_pos: 4
-                  grid_cell_column_pos: 2
-                  bg_color: 0x00000000
+                  grid_cell_column_pos: 3
+                  bg_color: 0x00000000       # fully transparent
                   border_width: 0
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
                         data:
-                          entity_id: script.script_3
+                          entity_id: script.wol_truenas
                   widgets:
                     - label:
+                        id: lbl_btn_8
                         text_font: icon_40
-                        text_color: 0xFFFFFF
                         text: "\U000F048C"   # Server
+                        text_color: 0xFFFFFF  
+
+              # ==================================================================
+              # text - ROW 5
+              # ==================================================================
+
+              - label:
+                  text: "Desk Control"
+                  text_font: almamono18
+                  text_color: 0xAAAAAA   # slightly dimmer than time
+                  text_align: CENTER
+                  grid_cell_row_pos: 5
+                  grid_cell_column_pos: 0
+                  grid_cell_column_span: 5
+                  grid_cell_x_align: CENTER
+                  grid_cell_y_align: CENTER
+
+              # ==================================================================
+              # BUTTONS - ROW 6
+              # ================================================================== 
 
               - button:
                   id: btn_9
-                  grid_cell_row_pos: 4
-                  grid_cell_column_pos: 3
-                  bg_color: 0x00000000
+                  grid_cell_row_pos: 6
+                  grid_cell_column_pos: 1
+                  bg_color: 0x00000000       # fully transparent
                   border_width: 0
                   on_click:
                     - homeassistant.action:
-                        action: script.toggle
+                        action: switch.toggle
                         data:
-                          entity_id: script.script_4
+                          entity_id: switch.monitor_right_switch
                   widgets:
                     - label:
+                        id: lbl_btn_9
                         text_font: icon_40
-                        text_color: 0xFFFFFF
-                        text: "\U000F048C"   # Server
+                        text: "\U000F0379" # Monitor
+                        text_color: 0xFFFFFF   
+
+              - button:
+                  id: btn_10
+                  grid_cell_row_pos: 6
+                  grid_cell_column_pos: 2
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: switch.toggle
+                        data:
+                          entity_id: switch.monitor_light_switch
+                  widgets:
+                    - label:
+                        id: lbl_btn_10
+                        text_font: icon_40
+                        text: "\U000F1987"   # Monitor Light
+                        text_color: 0xFFFFFF  
+
+              - button:
+                  id: btn_11
+                  grid_cell_row_pos: 6
+                  grid_cell_column_pos: 3
+                  bg_color: 0x00000000       # fully transparent
+                  border_width: 0
+                  on_click:
+                    - homeassistant.action:
+                        action: switch.toggle
+                        data:
+                          entity_id: switch.monitor_left_switch
+                  widgets:
+                    - label:
+                        id: lbl_btn_11
+                        text_font: icon_40
+                        text: "\U000F0379"   # Monitor
+                        text_color: 0xFFFFFF  
+
+
 
 
 #Time/Date Updates
