@@ -66,7 +66,8 @@ font:
       "\U000F0454", # tv remote
       "\U000F08F3", # nas
       "\U000F1BB8", # HDMI
-      "\U000F0E33", # gamepad
+      "\U000F1919", # gamepad
+      "\U000F048C", # Server
     ]
   - file: 'fonts/AlmaMono-Regular.otf'
     id: almamono40
@@ -359,7 +360,7 @@ lvgl:
                     - label:
                         text_font: icon_40
                         text_color: 0xFFFFFF
-                        text: "\U000F0E33"   # gamepad
+                        text: "\U000F1919"   # Gamepad
 
               # ==================================================================
               # BUTTONS - ROW 2
@@ -379,7 +380,7 @@ lvgl:
                     - label:
                         id: lbl_btn_6
                         text_font: icon_40
-                        text: "\U000F07C0"
+                        text: "\U000F07C0" # Computer
                         text_color: 0xFFFFFF   
  
 
@@ -398,7 +399,7 @@ lvgl:
                     - label:
                         text_font: icon_40
                         text_color: 0xFFFFFF
-                        text: "\U000F0012"   # replace with desired icon
+                        text: "\U000F08F3"   # NAS
 
               - button:
                   id: btn_8
@@ -415,7 +416,7 @@ lvgl:
                     - label:
                         text_font: icon_40
                         text_color: 0xFFFFFF
-                        text: "\U000F0013"   # replace with desired icon
+                        text: "\U000F048C"   # Server
 
               - button:
                   id: btn_9
@@ -432,7 +433,8 @@ lvgl:
                     - label:
                         text_font: icon_40
                         text_color: 0xFFFFFF
-                        text: "\U000F0014"   # replace with desired icon
+                        text: "\U000F048C"   # Server
+
 
 #Time/Date Updates
   on_ready:
