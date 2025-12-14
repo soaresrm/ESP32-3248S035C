@@ -1,6 +1,18 @@
 substitutions:
   name: desk-screen
   friendly_name: Desk Screen
+  md_bg: "0x121212"
+  md_surface: "0x1E1E1E"
+  md_surface_variant: "0x2A2A2A"
+
+  md_primary: "0xBB86FC"
+  md_primary_container: "0x4F378B"
+  md_secondary: "0x03DAC6"
+  md_warning: "0xFBC02D"
+
+  md_on_surface: "0xFFFFFF"
+  md_on_surface_variant: "0xB3B3B3"
+  md_outline: "0x2F2F2F"
 
 esphome:
   name: desk-screen
@@ -209,7 +221,7 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(0xFFFF00)   // yellow ON
+                ? lv_color_hex(${md_secondary})   // yellow ON
                 : lv_color_hex(0xFFFFFF);  // white OFF
 
   - platform: homeassistant
@@ -236,7 +248,7 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(0xFFFF00)   // yellow ON
+                ? lv_color_hex(${md_secondary})   // yellow ON
                 : lv_color_hex(0xFFFFFF);  // white OFF
 
   - platform: homeassistant
@@ -263,7 +275,7 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(0xFFFF00)   // yellow ON
+                ? lv_color_hex(${md_secondary})   // yellow ON
                 : lv_color_hex(0xFFFFFF);  // white OFF
 
   - platform: homeassistant
@@ -290,7 +302,7 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(0xFFFF00)   // yellow ON
+                ? lv_color_hex(${md_secondary})   // yellow ON
                 : lv_color_hex(0xFFFFFF);  // white OFF
 
 
@@ -318,7 +330,7 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(0xFFFF00)   // yellow ON
+                ? lv_color_hex(${md_secondary})   // yellow ON
                 : lv_color_hex(0xFFFFFF);  // white OFF
 
   - platform: homeassistant
@@ -345,7 +357,7 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(0xFFFF00)   // yellow ON
+                ? lv_color_hex(${md_secondary})   // yellow ON
                 : lv_color_hex(0xFFFFFF);  // white OFF
 
 #Time/Date Sync
@@ -369,9 +381,34 @@ interval:
 
 #Screen and buttons
 lvgl:
+  style_definitions:
+    - id: md_screen
+      bg_color: ${md_bg}
+
+    - id: md_header
+      text_color: ${md_on_surface}
+      text_letter_space: 1
+
+    - id: md_section
+      text_color: ${md_on_surface_variant}
+
+    - id: md_icon_button
+      bg_color: ${md_surface}
+      radius: 18
+      border_width: 1
+      border_color: ${md_outline}
+      pad_all: 10
+      text_color: ${md_on_surface}
+      shadow_width: 10
+      shadow_color: 0x000000
+      shadow_opa: 50%
+      shadow_ofs_y: 4
+      shadow_ofs_x: 0
+      shadow_spread: 0
+        
   pages:
     - id: button_page
-      bg_color: 0x000000
+      styles: md_screen
       widgets:
         - obj:
             align: center
@@ -385,8 +422,9 @@ lvgl:
               # top row: 5 equal columns
               grid_rows: [FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1)]
               grid_columns: [FR(1), FR(1), FR(1), FR(1), FR(1)]
-              pad_row: 6
-              pad_column: 6
+              pad_row: 10
+              pad_column: 10
+
 
             widgets:
               # ==================================================================
@@ -395,7 +433,7 @@ lvgl:
               - label:
                   id: lbl_status
                   text_font: roboto_medium
-                  text_color: 0xFFFFFF
+                  styles: md_header
                   text: "--:--   --------"   # placeholder
                   text_align: CENTER
                   grid_cell_row_pos: 0
@@ -411,7 +449,7 @@ lvgl:
               - label:
                   text: "IR Blaster"
                   text_font: almamono18
-                  text_color: 0xAAAAAA   # slightly dimmer than time
+                  styles: md_section   # slightly dimmer than time
                   text_align: CENTER
                   grid_cell_row_pos: 1
                   grid_cell_column_pos: 0
@@ -429,8 +467,7 @@ lvgl:
                   id: btn_1
                   grid_cell_row_pos: 2
                   grid_cell_column_pos: 0
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -447,8 +484,7 @@ lvgl:
                   id: btn_2
                   grid_cell_row_pos: 2
                   grid_cell_column_pos: 1
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -465,8 +501,7 @@ lvgl:
                   id: btn_3
                   grid_cell_row_pos: 2
                   grid_cell_column_pos: 2
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -483,8 +518,7 @@ lvgl:
                   id: btn_4
                   grid_cell_row_pos: 2
                   grid_cell_column_pos: 3
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -501,8 +535,7 @@ lvgl:
                   id: btn_5
                   grid_cell_row_pos: 2
                   grid_cell_column_pos: 4
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -521,7 +554,7 @@ lvgl:
               - label:
                   text: "Network Rack"
                   text_font: almamono18
-                  text_color: 0xAAAAAA   # slightly dimmer than time
+                  styles: md_section   # slightly dimmer than time
                   text_align: CENTER
                   grid_cell_row_pos: 3
                   grid_cell_column_pos: 0
@@ -537,8 +570,7 @@ lvgl:
                   id: btn_6
                   grid_cell_row_pos: 4
                   grid_cell_column_pos: 1
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -555,8 +587,7 @@ lvgl:
                   id: btn_7
                   grid_cell_row_pos: 4
                   grid_cell_column_pos: 2
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -573,8 +604,7 @@ lvgl:
                   id: btn_8
                   grid_cell_row_pos: 4
                   grid_cell_column_pos: 3
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: script.toggle
@@ -594,7 +624,7 @@ lvgl:
               - label:
                   text: "Desk Control"
                   text_font: almamono18
-                  text_color: 0xAAAAAA   # slightly dimmer than time
+                  styles: md_section   # slightly dimmer than time
                   text_align: CENTER
                   grid_cell_row_pos: 5
                   grid_cell_column_pos: 0
@@ -610,8 +640,7 @@ lvgl:
                   id: btn_9
                   grid_cell_row_pos: 6
                   grid_cell_column_pos: 1
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: switch.toggle
@@ -628,8 +657,7 @@ lvgl:
                   id: btn_10
                   grid_cell_row_pos: 6
                   grid_cell_column_pos: 2
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: switch.toggle
@@ -646,8 +674,7 @@ lvgl:
                   id: btn_11
                   grid_cell_row_pos: 6
                   grid_cell_column_pos: 3
-                  bg_color: 0x00000000       # fully transparent
-                  border_width: 0
+                  styles: md_icon_button
                   on_click:
                     - homeassistant.action:
                         action: switch.toggle
