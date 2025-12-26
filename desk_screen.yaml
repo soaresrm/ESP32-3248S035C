@@ -7,7 +7,7 @@ substitutions:
 
   md_primary: "0xBB86FC"
   md_primary_container: "0x4F378B"
-  md_secondary: "0x03DAC6"
+  md_secondary: "0x118a7f"
   md_warning: "0xFBC02D"
 
   md_on_surface: "0xFFFFFF"
@@ -69,6 +69,15 @@ font:
     id: roboto_medium
     size: 22
     bpp: 4
+
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 500
+    id: roboto_medium_4
+    size: 10
+    bpp: 4
+
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: icon_40
     size: 30
@@ -81,7 +90,11 @@ font:
       "\U000F1919", # gamepad
       "\U000F048C", # Server
       "\U000F0379", # Monitor
-      "\U000F1987", # Monitor Light               
+      "\U000F1987", # Monitor Light   
+      "\U000F0769", # Ceiling Light
+      "\U000F1051", # LED Strip
+      "\U000F1747", # Standing Light
+
     ]
 
   - file: 'fonts/AlmaMono-Regular.otf'
@@ -91,6 +104,10 @@ font:
   - file: 'fonts/AlmaMono-Regular.otf'
     id: almamono18
     size: 18
+    bpp: 4
+  - file: 'fonts/AlmaMono-Regular.otf'
+    id: almamono6
+    size: 13
     bpp: 4
 
 
@@ -119,15 +136,9 @@ light:
     id: back_light
     restore_mode: ALWAYS_ON
     on_turn_on:
-      - light.turn_off: led
-      - delay: 60min
-      - light.turn_off: 
-          id: back_light
-          transition_length: 1s
+      - light.turn_off: led  # Turn off the LED when the backlight turns on
     on_turn_off:
-      - light.turn_on:
-          id: led
-          effect: "Slow Pulse"
+      - light.turn_off: led  # Ensure LED is turned off when backlight is turned off
   - platform: rgb
     name: LED
     red: output_red
@@ -160,8 +171,8 @@ touchscreen:
   id: my_touch
   update_interval: 50ms
   transform:
-    mirror_y: false 
-    mirror_x: false 
+    mirror_y: true 
+    mirror_x: true 
 
   on_touch:
     - light.turn_on: back_light
@@ -181,7 +192,7 @@ display:
     cs_pin: 15
     dc_pin: 2
     invert_colors: false
-    rotation: 0
+    rotation: 180
     dimensions: 320x480
     update_interval: never
     auto_clear_enabled: false    
@@ -221,8 +232,8 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(${md_secondary})   // yellow ON
-                : lv_color_hex(0xFFFFFF);  // white OFF
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
 
   - platform: homeassistant
     id: Hogwarts
@@ -248,8 +259,8 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(${md_secondary})   // yellow ON
-                : lv_color_hex(0xFFFFFF);  // white OFF
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
 
   - platform: homeassistant
     id: Gringotts
@@ -275,8 +286,8 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(${md_secondary})   // yellow ON
-                : lv_color_hex(0xFFFFFF);  // white OFF
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
 
   - platform: homeassistant
     id: Monitor_Left
@@ -302,9 +313,8 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(${md_secondary})   // yellow ON
-                : lv_color_hex(0xFFFFFF);  // white OFF
-
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
 
   - platform: homeassistant
     id: Monitor_Light
@@ -330,8 +340,8 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(${md_secondary})   // yellow ON
-                : lv_color_hex(0xFFFFFF);  // white OFF
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
 
   - platform: homeassistant
     id: Monitor_Right
@@ -357,26 +367,168 @@ text_sensor:
 
             text_color: !lambda |-
               return (x == "on")
-                ? lv_color_hex(${md_secondary})   // yellow ON
-                : lv_color_hex(0xFFFFFF);  // white OFF
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
 
-#Time/Date Sync
+  - platform: homeassistant
+    id: Ceiling_light
+    entity_id: light.living_room_3
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_12
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_12
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F0769");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F0769");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
+  
+  - platform: homeassistant
+    id: Shelf_group
+    entity_id: light.shelf_light_2
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_13
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_13
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F1051");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F1051");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
+
+  - platform: homeassistant
+    id: Standing_light
+    entity_id: light.standing_light_light
+    on_value:
+      then:
+        - lvgl.widget.update:
+            id: btn_14
+            state:
+              disabled: !lambda |-
+                return (x == "unavailable") || (x == "unknown");
+
+        - lvgl.label.update:
+            id: lbl_btn_14
+            text: !lambda |-
+              static char buf[10];
+              if (x == "on") {
+                snprintf(buf, sizeof(buf), "%s", "\U000F1747");
+              } else {
+                snprintf(buf, sizeof(buf), "%s", "\U000F1747");
+              }
+              return buf;
+
+            text_color: !lambda |-
+              return (x == "on")
+                ? lv_color_hex(${md_secondary})   // when on
+                : lv_color_hex(0xFFFFFF);  // when off
+
+
+sensor:
+  - platform: homeassistant
+    id: temp_1
+    entity_id: sensor.temp_sensor_front_garden_temperature
+
+  - platform: homeassistant
+    id: temp_2
+    entity_id: sensor.home_heating_current_temperature
+
+  - platform: homeassistant
+    id: temp_3
+    entity_id: sensor.temp_sensor_network_rack_temperature
+
+  - platform: homeassistant
+    id: temp_4
+    entity_id: sensor.truenas_p_system_temperature
+
+  - platform: homeassistant
+    id: temp_5
+    entity_id: sensor.gringotts_system_temperature
+
+# ==========================================================
+# INTERVAL UPDATE (update every second) Time/Date
+# ==========================================================
 interval:
-  - interval: 1s
+  - interval: 1s #Time
     then:
       - lvgl.label.update:
-          id: lbl_status
+          id: lbl_datetime
           text: !lambda |-
-            std::string time = id(ha_time).state.empty()
-                ? "--:--"
-                : id(ha_time).state.c_str();
+            std::string t = id(ha_time).state.empty() ? "--:--" : id(ha_time).state.c_str();
+            std::string d = id(ha_date).state.empty() ? "DD/MM/YYYY" : id(ha_date).state.c_str();
 
-            std::string date = id(ha_date).state.empty()
-                ? "--------"
-                : id(ha_date).state.c_str();
+            if (d.length() == 10) {
+              d = d.substr(8,2) + "/" + d.substr(5,2) + "/" + d.substr(0,4);
+            }
 
-            std::string combined = time + "   " + date;
-            return combined.c_str();
+            static std::string out;
+            out = t + "  •  " + d;
+            return out.c_str();
+
+  - interval: 5s #Temp
+    then:
+      - lvgl.label.update: 
+          id: lbl_temp_1
+          text: !lambda |-
+            static char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f°C", id(temp_1).state);
+            return buf;
+
+      - lvgl.label.update:
+          id: lbl_temp_2
+          text: !lambda |-
+            static char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f°C", id(temp_2).state);
+            return buf;
+
+      - lvgl.label.update:
+          id: lbl_temp_3
+          text: !lambda |-
+            static char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f°C", id(temp_3).state);
+            return buf;
+
+      - lvgl.label.update:
+          id: lbl_temp_4
+          text: !lambda |-
+            static char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f°C", id(temp_4).state);
+            return buf;
+
+      - lvgl.label.update:
+          id: lbl_temp_5
+          text: !lambda |-
+            static char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f°C", id(temp_5).state);
+            return buf;
 
 
 #Screen and buttons
@@ -391,20 +543,43 @@ lvgl:
 
     - id: md_section
       text_color: ${md_on_surface_variant}
+      pad_top: 2
+      pad_bottom: 2
 
     - id: md_icon_button
-      bg_color: ${md_surface}
-      radius: 18
-      border_width: 1
-      border_color: ${md_outline}
-      pad_all: 10
+      bg_opa: TRANSP
+      border_width: 0
+      pad_all: 6
       text_color: ${md_on_surface}
-      shadow_width: 10
-      shadow_color: 0x000000
-      shadow_opa: 50%
-      shadow_ofs_y: 4
-      shadow_ofs_x: 0
-      shadow_spread: 0
+      shadow_width: 0
+
+    - id: time_label_style
+      text_color: ${md_primary}       # Material-You primary
+      text_font: roboto_medium
+      text_letter_space: 1
+      text_align: CENTER
+
+    - id: date_label_style
+      text_color: ${md_on_surface_variant}  # slightly dimmer
+      text_font: roboto_medium
+      text_letter_space: 1
+      text_align: CENTER
+  
+    - id: temp_card
+      bg_color: ${md_surface}
+      radius: 8
+      pad_all: 6
+      border_width: 0
+
+    - id: temp_name_style
+      text_color: ${md_on_surface_variant}
+      text_font: almamono6
+      text_align: CENTER
+
+    - id: temp_value_style
+      text_color: ${md_primary}
+      text_font: almamono6
+      text_align: CENTER
         
   pages:
     - id: button_page
@@ -420,9 +595,19 @@ lvgl:
               type: GRID
 
               # top row: 5 equal columns
-              grid_rows: [FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1), FR(1)]
+              grid_rows:
+                - CONTENT
+                - CONTENT
+                - CONTENT
+                - CONTENT
+                - CONTENT
+                - CONTENT
+                - CONTENT
+                - CONTENT
+                - CONTENT
+                - CONTENT
               grid_columns: [FR(1), FR(1), FR(1), FR(1), FR(1)]
-              pad_row: 10
+              pad_row: 2
               pad_column: 10
 
 
@@ -430,20 +615,120 @@ lvgl:
               # ==================================================================
               # TIME - ROW 0
               # ==================================================================
+
               - label:
-                  id: lbl_status
-                  text_font: roboto_medium
-                  styles: md_header
-                  text: "--:--   --------"   # placeholder
-                  text_align: CENTER
+                  id: lbl_datetime
+                  styles: time_label_style
+                  text: "--:-- • DD/MM/YYYY"
                   grid_cell_row_pos: 0
                   grid_cell_column_pos: 0
                   grid_cell_column_span: 5
                   grid_cell_x_align: CENTER
-                  grid_cell_y_align: START
+                  grid_cell_y_align: CENTER
+              # ==================================================================
+              # TEMPERATURE ROW - ROW 1 (FIXED)
+              # ==================================================================
+              - container:
+                  id: temp_row
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 0
+                  grid_cell_column_span: 5
+                  width: 100%
+                  height: 70px
+                  bg_color: 0x000000
+                  layout:
+                    type: grid
+                    grid_rows: [CONTENT]          # ← REQUIRED
+                    grid_columns: [FR(1), FR(1), FR(1), FR(1), FR(1)]
+                    pad_column: 10
+
+                  widgets:
+                    # ================== OUT ==================
+                    - container:
+                        styles: temp_card
+                        layout:
+                          type: grid
+                          grid_rows: [CONTENT, CONTENT]
+                          grid_columns: [FR(1)]
+                        widgets:
+                          - label:
+                              text: "Out"
+                              styles: temp_name_style
+                          - label:
+                              id: lbl_temp_1
+                              text: "--.-°C"
+                              styles: temp_value_style
+
+                    # ================== HOME =================
+                    - container:
+                        styles: temp_card
+                        layout:
+                          type: grid
+                          grid_rows: [CONTENT, CONTENT]
+                          grid_columns: [FR(1)]
+                        widgets:
+                          - label:
+                              text: "Home"
+                              styles: temp_name_style
+                          - label:
+                              id: lbl_temp_2
+                              text: "--.-°C"
+                              styles: temp_value_style
+
+                    # ================== RACK =================
+                    - container:
+                        styles: temp_card
+                        layout:
+                          type: grid
+                          grid_rows: [CONTENT, CONTENT]
+                          grid_columns: [FR(1)]
+                        widgets:
+                          - label:
+                              text: "Rack"
+                              styles: temp_name_style
+                          - label:
+                              id: lbl_temp_3
+                              text: "--.-°C"
+                              styles: temp_value_style
+
+                    # ================== TN W =================
+                    - container:
+                        styles: temp_card
+                        layout:
+                          type: grid
+                          grid_rows: [CONTENT, CONTENT]
+                          grid_columns: [FR(1)]
+                        widgets:
+                          - label:
+                              text: "TN W"
+                              styles: temp_name_style
+                          - label:
+                              id: lbl_temp_4
+                              text: "--.-°C"
+                              styles: temp_value_style
+
+                    # ================== TN P =================
+                    - container:
+                        styles: temp_card
+                        layout:
+                          type: grid
+                          grid_rows: [CONTENT, CONTENT]
+                          grid_columns: [FR(1)]
+                        widgets:
+                          - label:
+                              text: "TN P"
+                              styles: temp_name_style
+                          - label:
+                              id: lbl_temp_5
+                              text: "--.-°C"
+                              styles: temp_value_style
+
+
+
+
 
               # ==================================================================
-              # text - ROW 1
+              # text - ROW 2
               # ==================================================================
 
               - label:
@@ -451,21 +736,19 @@ lvgl:
                   text_font: almamono18
                   styles: md_section   # slightly dimmer than time
                   text_align: CENTER
-                  grid_cell_row_pos: 1
+                  grid_cell_row_pos: 2
                   grid_cell_column_pos: 0
                   grid_cell_column_span: 5
                   grid_cell_x_align: CENTER
                   grid_cell_y_align: CENTER
 
               # ==================================================================
-              # BUTTONS - ROW 2
+              # BUTTONS - ROW 3
               # ==================================================================
-              # ==================================================================
-              # BUTTON 1
-              # ==================================================================
+
               - button:
                   id: btn_1
-                  grid_cell_row_pos: 2
+                  grid_cell_row_pos: 3
                   grid_cell_column_pos: 0
                   styles: md_icon_button
                   on_click:
@@ -482,7 +765,7 @@ lvgl:
               # ==================================================================
               - button:
                   id: btn_2
-                  grid_cell_row_pos: 2
+                  grid_cell_row_pos: 3
                   grid_cell_column_pos: 1
                   styles: md_icon_button
                   on_click:
@@ -499,7 +782,7 @@ lvgl:
               # ==================================================================
               - button:
                   id: btn_3
-                  grid_cell_row_pos: 2
+                  grid_cell_row_pos: 3
                   grid_cell_column_pos: 2
                   styles: md_icon_button
                   on_click:
@@ -516,7 +799,7 @@ lvgl:
               # ==================================================================
               - button:
                   id: btn_4
-                  grid_cell_row_pos: 2
+                  grid_cell_row_pos: 3
                   grid_cell_column_pos: 3
                   styles: md_icon_button
                   on_click:
@@ -533,7 +816,7 @@ lvgl:
               # ==================================================================
               - button:
                   id: btn_5
-                  grid_cell_row_pos: 2
+                  grid_cell_row_pos: 3
                   grid_cell_column_pos: 4
                   styles: md_icon_button
                   on_click:
@@ -548,7 +831,7 @@ lvgl:
                         text: "\U000F1919"   # Gamepad
 
               # ==================================================================
-              # text - ROW 3
+              # text - ROW 4
               # ==================================================================
 
               - label:
@@ -556,7 +839,7 @@ lvgl:
                   text_font: almamono18
                   styles: md_section   # slightly dimmer than time
                   text_align: CENTER
-                  grid_cell_row_pos: 3
+                  grid_cell_row_pos: 4
                   grid_cell_column_pos: 0
                   grid_cell_column_span: 5
                   grid_cell_x_align: CENTER
@@ -564,11 +847,11 @@ lvgl:
 
     
               # ==================================================================
-              # BUTTONS - ROW 4
+              # BUTTONS - ROW 5
               # ================================================================== 
               - button:
                   id: btn_6
-                  grid_cell_row_pos: 4
+                  grid_cell_row_pos: 5
                   grid_cell_column_pos: 1
                   styles: md_icon_button
                   on_click:
@@ -585,7 +868,7 @@ lvgl:
 
               - button:
                   id: btn_7
-                  grid_cell_row_pos: 4
+                  grid_cell_row_pos: 5
                   grid_cell_column_pos: 2
                   styles: md_icon_button
                   on_click:
@@ -602,7 +885,7 @@ lvgl:
 
               - button:
                   id: btn_8
-                  grid_cell_row_pos: 4
+                  grid_cell_row_pos: 5
                   grid_cell_column_pos: 3
                   styles: md_icon_button
                   on_click:
@@ -618,7 +901,7 @@ lvgl:
                         text_color: 0xFFFFFF  
 
               # ==================================================================
-              # text - ROW 5
+              # text - ROW 6
               # ==================================================================
 
               - label:
@@ -626,19 +909,19 @@ lvgl:
                   text_font: almamono18
                   styles: md_section   # slightly dimmer than time
                   text_align: CENTER
-                  grid_cell_row_pos: 5
+                  grid_cell_row_pos: 6
                   grid_cell_column_pos: 0
                   grid_cell_column_span: 5
                   grid_cell_x_align: CENTER
                   grid_cell_y_align: CENTER
 
               # ==================================================================
-              # BUTTONS - ROW 6
+              # BUTTONS - ROW 7
               # ================================================================== 
 
               - button:
                   id: btn_9
-                  grid_cell_row_pos: 6
+                  grid_cell_row_pos: 7
                   grid_cell_column_pos: 1
                   styles: md_icon_button
                   on_click:
@@ -655,7 +938,7 @@ lvgl:
 
               - button:
                   id: btn_10
-                  grid_cell_row_pos: 6
+                  grid_cell_row_pos: 7
                   grid_cell_column_pos: 2
                   styles: md_icon_button
                   on_click:
@@ -672,7 +955,7 @@ lvgl:
 
               - button:
                   id: btn_11
-                  grid_cell_row_pos: 6
+                  grid_cell_row_pos: 7
                   grid_cell_column_pos: 3
                   styles: md_icon_button
                   on_click:
@@ -687,16 +970,71 @@ lvgl:
                         text: "\U000F0379"   # Monitor
                         text_color: 0xFFFFFF  
 
+              # ==================================================================
+              # TIME - ROW 8
+              # ==================================================================
+              - label:
+                  text: "Ligthing"
+                  text_font: almamono18
+                  styles: md_section   # slightly dimmer than time
+                  text_align: CENTER
+                  grid_cell_row_pos: 8
+                  grid_cell_column_pos: 0
+                  grid_cell_column_span: 5
+                  grid_cell_x_align: CENTER
+                  grid_cell_y_align: CENTER
 
+              # ==================================================================
+              # BUTTONS - ROW 9
+              # ================================================================== 
 
+              - button:
+                  id: btn_12
+                  grid_cell_row_pos: 9
+                  grid_cell_column_pos: 1
+                  styles: md_icon_button
+                  on_click:
+                    - homeassistant.action:
+                        action: light.toggle
+                        data:
+                          entity_id: light.living_room_3
+                  widgets:
+                    - label:
+                        id: lbl_btn_12
+                        text_font: icon_40
+                        text: "\U000F0769" # Ceiling Light
+                        text_color: 0xFFFFFF   
 
-#Time/Date Updates
-  on_ready:
-    - lvgl.label.update:
-        id: lbl_status
-        text: !lambda |-
-          return (
-            (id(ha_time).state.empty() ? String("??:??") : id(ha_time).state.c_str())
-            + String("   ")
-            + (id(ha_date).state.empty() ? String("--------") : id(ha_date).state.c_str())
-          ).c_str();
+              - button:
+                  id: btn_13
+                  grid_cell_row_pos: 9
+                  grid_cell_column_pos: 2
+                  styles: md_icon_button
+                  on_click:
+                    - homeassistant.action:
+                        action: light.toggle
+                        data:
+                          entity_id: light.shelf_light_2
+                  widgets:
+                    - label:
+                        id: lbl_btn_13
+                        text_font: icon_40
+                        text: "\U000F1051"   # LED Strip
+                        text_color: 0xFFFFFF  
+
+              - button:
+                  id: btn_14
+                  grid_cell_row_pos: 9
+                  grid_cell_column_pos: 3
+                  styles: md_icon_button
+                  on_click:
+                    - homeassistant.action:
+                        action: light.toggle
+                        data:
+                          entity_id: light.standing_light_light
+                  widgets:
+                    - label:
+                        id: lbl_btn_14
+                        text_font: icon_40
+                        text: "\U000F1747"   # Standing Light
+                        text_color: 0xFFFFFF  
